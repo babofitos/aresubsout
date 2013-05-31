@@ -1,0 +1,18 @@
+{
+  "name": "aresubsout",
+  "version": "0.0.0",
+  "description": "are subs out?",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app"
+  },
+  "dependencies": {
+    "feedparser": "0.15.x",
+    "request": "2.21.x",
+    "express": "3.1.0",
+    "jade": "*"
+  },
+  "repository": "",
+  "author": "babofitos",
+  "license": "BSD"
+}

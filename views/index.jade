@@ -1,0 +1,10 @@
+extends layout
+
+block content
+  h1= title
+  p=date
+  form
+    input#add-show-text(type="text")
+    input#add-show(type="submit", value="Add Show")
+  p#notification
+  ul#list
