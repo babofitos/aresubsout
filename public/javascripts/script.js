@@ -39,9 +39,6 @@ $('#filters').on('click', 'li', function(e) {
 function displayData(data) {
   var len = data.length
 
-  //clear prev results
-  $('#list').html('')
-
   for (var i=0;i<len;i++) {
     $('#list').append(
       $('<li/>', {
@@ -85,6 +82,8 @@ function fetch() {
     $('#notification').html('Error retrieving data')
   }
   , success: function(data, status) {
+      //clear prev results
+      $('#list').html('')
       if (status == 'success') {
         displayData(data.results)
         showPubDate(data.date)
