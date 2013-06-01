@@ -4,7 +4,7 @@ if (localStorage.animes) {
   buildFilters()
   fetch()
 } else {
-  $('#notification').html('It looks like you have no anime added')
+  $('#notification').html('It looks like you have no filters added')
 }
 
 $('#add-show').on('click', function(e) {
