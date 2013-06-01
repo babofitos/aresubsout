@@ -6,7 +6,8 @@
 var express = require('express')
   , routes = require('./routes')
   , http = require('http')
-  , path = require('path');
+  , path = require('path')
+  , type = require('./lib/type')
 
 var app = express();
 
@@ -16,6 +17,7 @@ app.configure(function(){
   app.set('view engine', 'jade');
   app.use(express.favicon());
   app.use(express.logger('dev'));
+  app.use(type('application/json', express.limit('100kb')))
   app.use(express.bodyParser());
   app.use(express.methodOverride());
   app.use(app.router);
