@@ -6,3 +6,31 @@ body {
 a {
   color: #00B7FF;
 }
+
+ul {
+  padding: 0px;
+}
+
+#filters {
+  display: inline;
+}
+
+.filters {
+  display: inline;
+  padding-left: 5px;
+  padding-right: 10px;
+  text-decoration: underline;
+  font-weight: bold;
+  cursor: pointer;
+  color: #438bc5;
+}
+
+.filters:hover {
+  background-repeat:no-repeat;
+  background-position: 100%, 0%;
+  background-image:url('../images/x.png');
+}
+
+.list-link:visited {
+  color: 'red';
+}
