@@ -14,17 +14,24 @@ $('#add-show').on('click', function(e) {
   localStorage.animes = JSON.stringify(data)
   $('#add-show-text').val('')
   updateFilters()
+  fetch()
 })
 
 $('#filters').on('click', function(e) {
+  //if click on li element, remove it
   if ($(e.target).is('li')) {
     var target = $(e.target)
+    //name of filter and index of list in ul
     removeFromLS(target.html(), target.index())
   }
 })
 
 function displayData(data) {
   var len = data.length
+
+  //clear prev results
+  $('#list').html('')
+
   for (var i=0;i<len;i++) {
     $('#list').append(
       $('<li/>', {
@@ -53,8 +60,12 @@ function updateFilters() {
   //rebuild filters
   $('#filters').html('')
   buildFilters()
+
+  //refetch with updated filters
+  fetch()
 }
 
+//fetch rss filtered by ls
 function fetch() {
   $.ajax({
     type: 'POST'

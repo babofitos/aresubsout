@@ -2,11 +2,11 @@ extends layout
 
 block content
   h1= title
-  p#date
-  form
+  form(method="post")
     input#add-show-text(type="text")
     input#add-show(type="submit", value="Add Show")
   span Filters:
-  ul#filters
+    ul#filters
+  p#date
   p#notification
   ul#list
