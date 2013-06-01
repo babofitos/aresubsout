@@ -1,10 +1,22 @@
 $(document).ready(function() {
+function isLocalStorageEmpty() {
+  if (localStorage.animes && JSON.parse(localStorage.animes).length !== 0) {
+    notificationMsg(false)
+    return false
+  } else {
+    notificationMsg(true)
+    return true
+  }
+}
 
-if (localStorage.animes) {
+function notificationMsg(err) {
+  var msg = err ? 'It looks like you have no filters added' : ''
+  $('#notification').html(msg)
+}
+
+if (!isLocalStorageEmpty()) {
   buildFilters()
   fetch()
-} else {
-  $('#notification').html('It looks like you have no filters added')
 }
 
 $('#add-show').on('click', function(e) {
@@ -13,17 +25,15 @@ $('#add-show').on('click', function(e) {
   data.push($('#add-show-text').val().toLowerCase())
   localStorage.animes = JSON.stringify(data)
   $('#add-show-text').val('')
+  isLocalStorageEmpty()
   updateFilters()
-  fetch()
 })
 
-$('#filters').on('click', function(e) {
-  //if click on li element, remove it
-  if ($(e.target).is('li')) {
-    var target = $(e.target)
-    //name of filter and index of list in ul
-    removeFromLS(target.html(), target.index())
-  }
+//if click on li element, remove it
+$('#filters').on('click', 'li', function(e) {
+  var target = $(e.target)
+  //name of filter and index of list in ul
+  removeFromLS(target.html(), target.index())
 })
 
 function displayData(data) {
@@ -74,9 +84,11 @@ function fetch() {
   , error: function() {
     $('#notification').html('Error retrieving data')
   }
-  , success: function(data) {
-      displayData(data.results)
-      showPubDate(data.date)
+  , success: function(data, status) {
+      if (status == 'success') {
+        displayData(data.results)
+        showPubDate(data.date)
+      }
     }
   })
 }
@@ -99,5 +111,6 @@ function removeFromLS(filter, index) {
   animes.splice(index, 1)
   localStorage.animes = JSON.stringify(animes)
   updateFilters()
+  isLocalStorageEmpty()
 }
 })
