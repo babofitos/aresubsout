@@ -86,6 +86,7 @@ function makeLink(data) {
     class: 'list-link'
   , href: data.link
   , text: data.title
+  , target: "_blank"
   })
 }
 
