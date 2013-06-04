@@ -1,17 +1,16 @@
 $(document).ready(function() {
 function isLocalStorageEmpty() {
   if (localStorage.animes && JSON.parse(localStorage.animes).length !== 0) {
-    notificationMsg(false)
+    hideNotification(true)
     return false
   } else {
-    notificationMsg(true)
+    hideNotification(false)
     return true
   }
 }
 
-function notificationMsg(err) {
-  var msg = err ? 'It looks like you have no filters added' : ''
-  $('#notification').html(msg)
+function hideNotification(hide) {
+  hide ? $('#notification').addClass('invis') : $('#notification').removeClass('invis')
 }
 
 if (!isLocalStorageEmpty()) {
@@ -79,11 +78,14 @@ function fetch() {
   , url: window.location.href
   , data: {data: localStorage.animes}
   , error: function() {
-    $('#notification').html('Error retrieving data')
+    $('#error').removeClass('hide')
   }
   , success: function(data, status) {
       //clear prev results
       $('#list').html('')
+
+      $('#error').addClass('hide')
+      
       if (status == 'success') {
         displayData(data.results)
         showFetchDate()

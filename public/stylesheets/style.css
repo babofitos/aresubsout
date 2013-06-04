@@ -34,3 +34,11 @@ ul {
 .list-link:visited {
   color: red;
 }
+
+.hide {
+  display:none;
+}
+
+.invis {
+  visibility:hidden;
+}
