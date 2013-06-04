@@ -86,7 +86,7 @@ function fetch() {
       $('#list').html('')
       if (status == 'success') {
         displayData(data.results)
-        showPubDate(data.date)
+        showFetchDate()
       }
     }
   })
@@ -101,7 +101,8 @@ function makeLink(data) {
   })
 }
 
-function showPubDate(date) {
+function showFetchDate() {
+  var date = new Date(Date.now()).toString()
   $('#date').html(date)
 }
 
