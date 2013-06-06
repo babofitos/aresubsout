@@ -18,7 +18,7 @@ exports.show = function(req, res, next) {
     res.send(204)
     return
   }
-  db.findArticle(filter, function(err, results) {
+  db.findArticles(filter, function(err, results) {
     if (err) next(err)
     else res.send(200, {results: results})
   })
