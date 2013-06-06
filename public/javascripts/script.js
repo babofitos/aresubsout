@@ -1,27 +1,115 @@
 $(document).ready(function() {
+
+if (!isLocalStorageEmpty()) {
+  buildFilters()
+}
+
+var socket = io.connect(window.location.href)
+
+socket.on('connect', function() {
+  if (!isLocalStorageEmpty()) {
+    socket.emit('filter', {filters: localStorage.animes})
+  }
+})
+
+socket.on('error', function(err) {
+  $('#error').html(err.msg)
+  $('#error').removeClass('hide')
+})
+
+socket.on('results', function(data) {
+  //clear previous results
+  clearList()
+  if (data) {
+    displayData(data.results)
+    showFetchDate()
+  }
+})
+
+//new articles. regexp compare with filters
+socket.on('new', function(data) {
+  console.log('getting new torrent', data)
+  if (!isLocalStorageEmpty()) {
+    var results = compare(data, localStorage.animes)
+    console.log('results', results)
+    if (results) {
+      var newArticles = []
+      newArticles.push(results)
+      displayData(newArticles)
+    }
+  }
+})
+
+function compare(data, filter) {
+  console.log('compare data', data)
+  console.log('compare filter', filter)
+  var len = filter.length
+
+  for (var i=0;i<len;i++) {
+    var escapeBrackets = filter[i].replace('[', '\\[').replace(']', '\\]')
+      , currentFilter = escapeBrackets.split(' ')
+      , re = '(?=.*'
+
+    re += currentFilter.join(')(?=.*')
+    re += ').+'
+    var reobj = new RegExp(re, "i")
+    if (data.title.match(reobj) != null) {
+      return { 
+        link: data.link.replace('http://www.nyaa.eu/?page=download', 'http://www.nyaa.eu/?page=view')
+      , title: data.title
+      }
+    }
+  }
+}
+
+function clearFilters() {
+  $('#filters').html('')
+}
+
+function clearList() {
+  $('#list').html('')
+}
+
+function clearDate() {
+  $('#date').html('')
+}
+
 function isLocalStorageEmpty() {
-  if (localStorage.animes && JSON.parse(localStorage.animes).length !== 0) {
-    hideNotification(true)
-    return false
+  if (localStorage.animes) {
+    try {
+      if (JSON.parse(localStorage.animes).length !== 0) {
+        $('#error').addClass('hide')
+        return false
+      }
+      
+    }
+    catch(e) {
+      $('#error').removeClass('hide')
+      $('#error').html('Error with your filter. Try clearing your filters')
+      return true
+    }
   } else {
-    hideNotification(false)
+    clearFilters()
+    clearList()
+    clearDate()
+    $('#error').removeClass('hide')
+    $('#error').html('It looks like you have no filters added')
     return true
   }
 }
 
-function hideNotification(hide) {
-  hide ? $('#notification').addClass('invis') : $('#notification').removeClass('invis')
-}
-
-if (!isLocalStorageEmpty()) {
-  buildFilters()
-  fetch()
-}
+$('#clear-filters').on('click', function(e) {
+  e.preventDefault()
+  localStorage.clear()
+  isLocalStorageEmpty()
+})
 
 $('#add-show').on('click', function(e) {
   e.preventDefault()
   var data = localStorage.animes ? JSON.parse(localStorage.animes) : []
-  data.push($('#add-show-text').val().toLowerCase())
+  var text = $('#add-show-text').val()
+  if (!text) return
+  data.push(text)
   localStorage.animes = JSON.stringify(data)
   $('#add-show-text').val('')
   isLocalStorageEmpty()
@@ -31,8 +119,10 @@ $('#add-show').on('click', function(e) {
 //if click on li element, remove it
 $('#filters').on('click', 'li', function(e) {
   var target = $(e.target)
-  //name of filter and index of list in ul
-  removeFromLS(target.html(), target.index())
+  if (!isLocalStorageEmpty()) {
+    //name of filter and index of list in ul
+    removeFromLS(target.html(), target.index())
+  }
 })
 
 function displayData(data) {
@@ -64,34 +154,12 @@ function buildFilters() {
 
 function updateFilters() {
   //rebuild filters
-  $('#filters').html('')
-  buildFilters()
-
-  //refetch with updated filters
-  fetch()
-}
-
-//fetch rss filtered by ls
-function fetch() {
-  $.ajax({
-    type: 'POST'
-  , url: window.location.href
-  , data: {data: localStorage.animes}
-  , error: function() {
-    $('#error').removeClass('hide')
+  clearFilters()
+  if (!isLocalStorageEmpty()) {
+    buildFilters()
+    //refetch with updated filters
+    socket.emit('filter', {filters: localStorage.animes})
   }
-  , success: function(data, status) {
-      //clear prev results
-      $('#list').html('')
-
-      $('#error').addClass('hide')
-      
-      if (status == 'success') {
-        displayData(data.results)
-        showFetchDate()
-      }
-    }
-  })
 }
 
 function makeLink(data) {
@@ -109,10 +177,13 @@ function showFetchDate() {
 }
 
 function removeFromLS(filter, index) {
-  var animes = localStorage.animes ? JSON.parse(localStorage.animes) : []
+  var animes = JSON.parse(localStorage.animes)
   animes.splice(index, 1)
-  localStorage.animes = JSON.stringify(animes)
+  if (animes.length == 0) {
+    localStorage.clear()
+  } else {
+    localStorage.animes = JSON.stringify(animes)
+  }
   updateFilters()
-  isLocalStorageEmpty()
 }
 })

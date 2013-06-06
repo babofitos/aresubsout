@@ -4,14 +4,15 @@
  */
 
 var express = require('express')
-  , routes = require('./routes')
   , http = require('http')
   , path = require('path')
   , type = require('./lib/type')
   , parse = require('./lib/parse')
+  , app = express()
+  , server = http.createServer(app)
+  , io = require('socket.io').listen(server)
 
-var app = express();
-
+io.set('log level', 0)
 app.configure(function(){
   app.set('port', process.env.PORT || 3000);
   app.set('views', __dirname + '/views');
@@ -36,12 +37,13 @@ app.configure('development', function(){
   app.use(express.errorHandler());
 });
 
-app.get('/', routes.index)
-app.post('/', routes.show)
+require('./routes/index.js')(app, io)
 
 //fetch and save RSS every 5 minutes
-setInterval(parse.save, 300000)
+global.setInterval(function() {
+  parse.save(io)
+}, 300000)
 
-http.createServer(app).listen(app.get('port'), function(){
+server.listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));
 });
