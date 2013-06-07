@@ -12,7 +12,8 @@ var express = require('express')
   , server = http.createServer(app)
   , io = require('socket.io').listen(server)
 
-io.set('log level', 0)
+io.set('log level', 3)
+
 app.configure(function(){
   app.set('port', process.env.PORT || 3000);
   app.set('views', __dirname + '/views');

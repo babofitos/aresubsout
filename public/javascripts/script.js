@@ -30,12 +30,10 @@ socket.on('results', function(data) {
 socket.on('new', function(data) {
   console.log('getting new torrent', data)
   if (!isLocalStorageEmpty()) {
-    var results = compare(data, localStorage.animes)
+    var results = compare(data, JSON.parse(localStorage.animes))
     console.log('results', results)
-    if (results) {
-      var newArticles = []
-      newArticles.push(results)
-      displayData(newArticles)
+    if (results.length > 0) {
+      displayData(results)
     }
   }
 })
@@ -44,22 +42,28 @@ function compare(data, filter) {
   console.log('compare data', data)
   console.log('compare filter', filter)
   var len = filter.length
+    , results = []
 
   for (var i=0;i<len;i++) {
-    var escapeBrackets = filter[i].replace('[', '\\[').replace(']', '\\]')
+    var escapeBrackets = filter[i].replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&")
       , currentFilter = escapeBrackets.split(' ')
       , re = '(?=.*'
 
     re += currentFilter.join(')(?=.*')
     re += ').+'
     var reobj = new RegExp(re, "i")
+    console.log('reobj', reobj)
     if (data.title.match(reobj) != null) {
-      return { 
+      console.log('matched')
+      console.log('link', data.link)
+      console.log('title', data.title)
+      results.push({ 
         link: data.link.replace('http://www.nyaa.eu/?page=download', 'http://www.nyaa.eu/?page=view')
       , title: data.title
-      }
+      })
     }
   }
+  return results
 }
 
 function clearFilters() {

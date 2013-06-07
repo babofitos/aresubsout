@@ -13,6 +13,7 @@ module.exports = function(app, io) {
 
     io.sockets.on('connection', function(socket) {
       socket.on('filter', function(data) {
+        console.log('socket?', socket.id)
         console.log('data.filters', data.filters)
         try {
           data.filters = JSON.parse(data.filters)

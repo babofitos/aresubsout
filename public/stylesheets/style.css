@@ -42,3 +42,7 @@ ul {
 .invis {
   visibility:hidden;
 }
+
+#clear-filters {
+  margin:20px 0px
+}
