@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "are subs out?",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha test/*.js",
     "start": "node app"
   },
   "engines": {
@@ -18,6 +18,11 @@
     "levelup": "0.9.x",
     "leveldown": "0.5.x",
     "socket.io": "0.9.14"
+  },
+  "devDependencies": {
+    "nodemon": "0.7.8",
+    "zombie": "2.0.0-alpha19",
+    "mocha": "1.10.0"
   },
   "repository": "",
   "author": "babofitos",

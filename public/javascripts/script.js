@@ -1,4 +1,6 @@
 $(document).ready(function() {
+var originalTitle = $('title').html()
+  , newArticleCtr = 0
 
 if (!isLocalStorageEmpty()) {
   buildFilters()
@@ -8,7 +10,7 @@ var socket = io.connect(window.location.href)
 
 socket.on('connect', function() {
   if (!isLocalStorageEmpty()) {
-    socket.emit('filter', {filters: localStorage.animes})
+    socket.emit('filter', {filters: localStorage.getItem('animes')})
   }
 })
 
@@ -30,10 +32,14 @@ socket.on('results', function(data) {
 socket.on('new', function(data) {
   console.log('getting new torrent', data)
   if (!isLocalStorageEmpty()) {
-    var results = compare(data, JSON.parse(localStorage.animes))
+    var results = compare(data, JSON.parse(localStorage.getItem('animes')))
     console.log('results', results)
     if (results.length > 0) {
       displayData(results)
+      newArticleCtr++
+
+      $('title').html('(' + newArticleCtr.toString() + ') ' + originalTitle)
+
     }
   }
 })
@@ -79,25 +85,27 @@ function clearDate() {
 }
 
 function isLocalStorageEmpty() {
-  if (localStorage.animes) {
+  var $error = $('#error')
+  if (localStorage.getItem('animes')) {
+    console.log(localStorage.getItem('animes'))
     try {
-      if (JSON.parse(localStorage.animes).length !== 0) {
-        $('#error').addClass('hide')
+      if (JSON.parse(localStorage.getItem('animes')).length !== 0) {
+        $error.addClass('hide')
         return false
       }
       
     }
     catch(e) {
-      $('#error').removeClass('hide')
-      $('#error').html('Error with your filter. Try clearing your filters')
+      $error.removeClass('hide')
+      $error.html('Error with your filter. Try clearing your filters')
       return true
     }
   } else {
     clearFilters()
     clearList()
     clearDate()
-    $('#error').removeClass('hide')
-    $('#error').html('It looks like you have no filters added')
+    $error.removeClass('hide')
+    $error.html('It looks like you have no filters added')
     return true
   }
 }
@@ -110,11 +118,11 @@ $('#clear-filters').on('click', function(e) {
 
 $('#add-show').on('click', function(e) {
   e.preventDefault()
-  var data = localStorage.animes ? JSON.parse(localStorage.animes) : []
+  var data = localStorage.getItem('animes') ? JSON.parse(localStorage.getItem('animes')) : []
   var text = $('#add-show-text').val()
   if (!text) return
   data.push(text)
-  localStorage.animes = JSON.stringify(data)
+  localStorage.setItem('animes', JSON.stringify(data))
   $('#add-show-text').val('')
   isLocalStorageEmpty()
   updateFilters()
@@ -122,10 +130,10 @@ $('#add-show').on('click', function(e) {
 
 //if click on li element, remove it
 $('#filters').on('click', 'li', function(e) {
-  var target = $(e.target)
+  var $this = $(this)
   if (!isLocalStorageEmpty()) {
     //name of filter and index of list in ul
-    removeFromLS(target.html(), target.index())
+    removeFromLS($this.html(), $this.index())
   }
 })
 
@@ -143,9 +151,10 @@ function displayData(data) {
 }
 
 function buildFilters() {
-  var list = JSON.parse(localStorage.animes)
+  var list = JSON.parse(localStorage.getItem('animes'))
     , len = list.length
 
+  console.log('list in buildfilters', list)
   for (var i=0;i<len;i++) {
     $('#filters').append(
       $('<li/>', {
@@ -162,7 +171,7 @@ function updateFilters() {
   if (!isLocalStorageEmpty()) {
     buildFilters()
     //refetch with updated filters
-    socket.emit('filter', {filters: localStorage.animes})
+    socket.emit('filter', {filters: localStorage.getItem('animes')})
   }
 }
 
@@ -181,12 +190,12 @@ function showFetchDate() {
 }
 
 function removeFromLS(filter, index) {
-  var animes = JSON.parse(localStorage.animes)
+  var animes = JSON.parse(localStorage.getItem('animes'))
   animes.splice(index, 1)
   if (animes.length == 0) {
     localStorage.clear()
   } else {
-    localStorage.animes = JSON.stringify(animes)
+    localStorage.setItem('animes', JSON.stringify(animes))
   }
   updateFilters()
 }
