@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "are subs out?",
   "scripts": {
-    "test": "mocha test/*.js",
+    "test": "mocha ./test/client.js",
     "start": "node app"
   },
   "engines": {

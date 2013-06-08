@@ -22,7 +22,7 @@ socket.on('error', function(err) {
 socket.on('results', function(data) {
   //clear previous results
   clearList()
-  if (data) {
+  if (data.results) {
     displayData(data.results)
     showFetchDate()
   }
@@ -86,10 +86,20 @@ function clearDate() {
 
 function isLocalStorageEmpty() {
   var $error = $('#error')
-  if (localStorage.getItem('animes')) {
-    console.log(localStorage.getItem('animes'))
+    , animu = localStorage.getItem('animes')
+    
+  if (animu === '[]' || !animu) {
+    clearFilters()
+    clearList()
+    clearDate()
+    $error.removeClass('hide')
+    $error.html('It looks like you have no filters added')
+    return true
+  }
+  else {
+    console.log(animu)
     try {
-      if (JSON.parse(localStorage.getItem('animes')).length !== 0) {
+      if (JSON.parse(animu).length !== 0) {
         $error.addClass('hide')
         return false
       }
@@ -100,13 +110,6 @@ function isLocalStorageEmpty() {
       $error.html('Error with your filter. Try clearing your filters')
       return true
     }
-  } else {
-    clearFilters()
-    clearList()
-    clearDate()
-    $error.removeClass('hide')
-    $error.html('It looks like you have no filters added')
-    return true
   }
 }
 

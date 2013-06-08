@@ -1,3 +1,5 @@
+app = require('../app')
+
 var Browser = require('zombie')
   , assert = require('assert')
   , mocha = require('mocha')
@@ -5,9 +7,14 @@ var Browser = require('zombie')
   , host = "http://localhost:3000"
 
 /* 
-zombie localStorage host must be passed with no http://
-websockets take a bit to load, must wait after each visit else will get Error
-setItem arguments need double quotes around them. single quotes will not work unless variable
+ * zombie localStorage host must be passed with no http://
+
+ * websockets take a bit to load, must wait after each visit else will get Error
+
+ * setItem arguments need double quotes around them. single quotes will not work unless a variable
+
+ * the criteria for erroring should be a lack of a hide class on #error
+   because the error text is not changed on a non-error
 */
 
 describe('visit index page', function() {
@@ -27,7 +34,7 @@ describe('visit index page', function() {
     assert.ok(browser.success)
   })
 
-  it('should display no filters added error if empty localStorage', function() {
+  it('should display "no filters added" error if empty localStorage', function() {
     assert.equal(browser.text('#error'), "It looks like you have no filters added")
   })
 
@@ -41,20 +48,62 @@ describe('visit index page', function() {
   })
 
   it('should display each element in localStorage array as li .filters', function(done) {
-    data.value = '["here", "are", "some", "tests"]'
-
+    data.value = '["here", "are", "some", "tests", 1]'
     browser.localStorage("localhost:3000").setItem(data.key, data.value)
+
     browser.reload(function() {
       browser.wait(500)
       assert.equal(browser.queryAll('.filters').length, JSON.parse(data.value).length)
       done()
     })
-    
   })
 
-  it('should remove filter when clicked on', function() {
-    browser.fire('.filters', 'click', function() {
-      assert.equal(browser.queryAll('.filters').length, JSON.parse(data.value).length - 1)
+  it('should display no error message for valid values', function(done) {
+    data.value = '["here", "are", "some", "tests", 1, "1", "[]"]'
+    browser.localStorage("localhost:3000").setItem(data.key, data.value)
+
+    browser.reload(function() {
+      browser.wait(500)
+      assert.equal(browser.querySelector('#error').className, 'hide')
+      done()
+    })
+  })
+
+  it('should regard a localStorage value of [] as an empty filter', function(done) {
+    data.value = '[]'
+    browser.localStorage("localhost:3000").setItem(data.key, data.value)
+
+    browser.reload(function() {
+      browser.wait(500)
+      assert.equal(browser.queryAll('.filters').length, 0)
+      assert.notEqual(browser.querySelector('#error').className, 'hide')
+      assert.equal(browser.text('#error'), "It looks like you have no filters added")
+      done()
+    })
+  })
+
+  it('should appropriately handle invalid values', function(done) {
+    data.value = "{"
+    browser.localStorage("localhost:3000").setItem(data.key, data.value)
+    
+    browser.reload(function() {
+      browser.wait(500)
+      assert.notEqual(browser.querySelector('#error').className, 'hide')
+      assert.equal(browser.text('#error'), "Error with your filter. Try clearing your filters")
+      done()
+    })
+  })
+
+  it('should remove filter when clicked on', function(done) {
+    data.value = '["here", "are", "some", "tests"]'
+    browser.localStorage("localhost:3000").setItem(data.key, data.value)
+
+    browser.reload(function() {
+      browser.wait(500)
+      browser.fire('.filters', 'click', function() {
+        assert.equal(browser.queryAll('.filters').length, JSON.parse(data.value).length - 1)
+        done()
+      })
     })
   })
 
@@ -65,11 +114,12 @@ describe('visit index page', function() {
     })
   })
 
-  it('should clear all filters when clear all filters button is clicked', function() {
+  it('should have no li .filters when clear all filters button is clicked', function() {
     browser.pressButton('#clear-filters', function() {
       assert.equal(browser.queryAll('.filters').length, 0)
 
       it('should display no filters added error', function() {
+        assert.notEqual(browser.querySelector('#error').className, 'hide')
         assert.equal(browser.text('#error'), "It looks like you have no filters added")
       })
     })

@@ -13,6 +13,7 @@ var express = require('express')
   , io = require('socket.io').listen(server)
 
 io.set('log level', 3)
+require('./lib/socket')(io)
 
 app.configure(function(){
   app.set('port', process.env.PORT || 3000);
@@ -40,7 +41,7 @@ app.configure('development', function(){
 
 require('./routes/index.js')(app, io)
 
-//fetch and save RSS every 5 minutes
+// fetch and save RSS every 5 minutes
 global.setInterval(function() {
   parse.save(io)
 }, 300000)
