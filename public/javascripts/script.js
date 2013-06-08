@@ -28,6 +28,11 @@ socket.on('results', function(data) {
   }
 })
 
+socket.on('disconnect', function() {
+  $('#error').html('Connection interrupted. Refresh the page')
+  $('#error').removeClass('hide')
+})
+
 //new articles. regexp compare with filters
 socket.on('new', function(data) {
   console.log('getting new torrent', data)
@@ -87,7 +92,7 @@ function clearDate() {
 function isLocalStorageEmpty() {
   var $error = $('#error')
     , animu = localStorage.getItem('animes')
-    
+
   if (animu === '[]' || !animu) {
     clearFilters()
     clearList()

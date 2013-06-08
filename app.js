@@ -25,11 +25,11 @@ app.configure(function(){
   app.use(express.bodyParser());
   app.use(express.methodOverride());
   app.use(app.router);
+  app.use(express.static(path.join(__dirname, 'public')));
   app.use(function(err, req, res, next) {
     if (err) res.send('Something went wrong', 500)
     if (app.settings.env === 'development') console.log(err)
   })
-  app.use(express.static(path.join(__dirname, 'public')));
   app.use(function(req, res) {
     res.send(404, 'Page Not Found')
   })
