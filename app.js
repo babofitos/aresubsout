@@ -11,8 +11,30 @@ var express = require('express')
   , app = express()
   , server = http.createServer(app)
   , io = require('socket.io').listen(server)
+  , levelup = require('levelup')
+  , options = { valueEncoding: 'json' }
+  , db = require('./lib/db')(levelup('../db', options))
 
-io.set('log level', 3)
+io.configure('production', function(){
+  io.enable('browser client minification')
+  io.enable('browser client etag')
+  io.enable('browser client gzip')
+  io.set('log level', 1);
+
+  io.set('transports', [
+    'websocket'
+  , 'flashsocket'
+  , 'htmlfile'
+  , 'xhr-polling'
+  , 'jsonp-polling'
+  ])
+})
+
+io.configure('development', function(){
+  io.set('transports', ['websocket'])
+  io.set('log level', 3)
+})
+
 require('./lib/socket')(io)
 
 app.configure(function(){
@@ -45,6 +67,7 @@ require('./routes/index.js')(app, io)
 global.setInterval(function() {
   parse.save(io)
 }, 300000)
+// parse.save(io)
 
 server.listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));
