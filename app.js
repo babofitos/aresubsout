@@ -65,9 +65,10 @@ require('./routes/index.js')(app, io)
 
 // fetch and save RSS every 5 minutes
 global.setInterval(function() {
-  parse.save(io)
+  parse.save('http://tokyotosho.info/rss.php?filter=1', io, function(){})
 }, 300000)
-// parse.save(io)
+// parse.save('http://tokyotosho.info/rss.php?filter=1', io, function() {
+// })
 
 server.listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));

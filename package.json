@@ -23,7 +23,8 @@
     "nodemon": "0.7.8",
     "zombie": "2.0.0-alpha19",
     "mocha": "1.10.0",
-    "socket.io-client": "0.9.16"
+    "socket.io-client": "0.9.16",
+    "level-cache": "0.1.0" 
   },
   "repository": "",
   "author": "babofitos",
