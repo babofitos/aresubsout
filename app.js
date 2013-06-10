@@ -13,7 +13,8 @@ var express = require('express')
   , io = require('socket.io').listen(server)
   , levelup = require('levelup')
   , options = { valueEncoding: 'json' }
-  , db = require('./lib/db')(levelup('../db', options))
+  , db = require('./lib/db')(levelup('./db', options))
+  , cronJob = require('cron').CronJob
 
 io.configure('production', function(){
   io.enable('browser client minification')
@@ -64,9 +65,16 @@ app.configure('development', function(){
 require('./routes/index.js')(app, io)
 
 // fetch and save RSS every 5 minutes
-global.setInterval(function() {
+var fetchRSS = new cronJob('0 */5 * * * *', function() {
   parse.save('http://tokyotosho.info/rss.php?filter=1', io, function(){})
-}, 300000)
+}, null, true).start()
+
+var deleteWeekOld = new cronJob('00 00 00 * * 0-6', function() {
+  console.log('deleting week old keys')
+  db.purge(function(err) {
+    if (err) console.log('error deleting')
+  })
+}, null, false).start()
 // parse.save('http://tokyotosho.info/rss.php?filter=1', io, function() {
 // })
 
