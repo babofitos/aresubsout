@@ -35,10 +35,8 @@ socket.on('disconnect', function() {
 
 //new articles. regexp compare with filters
 socket.on('new', function(data) {
-  console.log('getting new torrent', data)
   if (!isLocalStorageEmpty()) {
     var results = compare(data, JSON.parse(localStorage.getItem('animes')))
-    console.log('results', results)
     if (results.length > 0) {
       displayData(results)
       newArticleCtr++
@@ -50,8 +48,6 @@ socket.on('new', function(data) {
 })
 
 function compare(data, filter) {
-  console.log('compare data', data)
-  console.log('compare filter', filter)
   var len = filter.length
     , results = []
 
@@ -63,11 +59,7 @@ function compare(data, filter) {
     re += currentFilter.join(')(?=.*')
     re += ').+'
     var reobj = new RegExp(re, "i")
-    console.log('reobj', reobj)
     if (data.title.match(reobj) != null) {
-      console.log('matched')
-      console.log('link', data.link)
-      console.log('title', data.title)
       results.push({ 
         link: data.link.replace('http://www.nyaa.eu/?page=download', 'http://www.nyaa.eu/?page=view')
       , title: data.title
@@ -102,7 +94,6 @@ function isLocalStorageEmpty() {
     return true
   }
   else {
-    console.log(animu)
     try {
       if (JSON.parse(animu).length !== 0) {
         $error.addClass('hide')
@@ -162,7 +153,6 @@ function buildFilters() {
   var list = JSON.parse(localStorage.getItem('animes'))
     , len = list.length
 
-  console.log('list in buildfilters', list)
   for (var i=0;i<len;i++) {
     $('#filters').append(
       $('<li/>', {

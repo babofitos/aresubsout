@@ -1,11 +1,10 @@
 var level = require('level-cache')()
-  , db = require('../lib/db')(level)
-  , parse = require('../lib/parse')
   , mocha = require('mocha')
   , assert = require('assert')
   , http = require('http')
   , fs = require('fs')
   , compare = require('../lib/compare').compare
+
 
 var io = {
   sockets: {
@@ -19,6 +18,9 @@ var io = {
 
 describe('unit', function() {
   before(function(done) {
+    db = require('../lib/db')(level)
+    parse = require('../lib/parse')(db, io)
+
     var server = http.createServer(function(req, res) {
       fs.readFile('./test/mockrss.xml', function(err, file) {
         if (err) throw err
@@ -33,7 +35,7 @@ describe('unit', function() {
   })
   describe('parse', function() {
     it('should parse and save into the database and emit new', function(done) {
-      parse.save('http://localhost:3001', io, function() {
+      parse.save('http://localhost:3001', function() {
         assert.deepEqual(io.emitted, {
           link: 'http://www.nyaa.eu/?page=download&tid=441373'
         , title: '[AtoZ] To LOVE-Ru Darkness Vol.6 [BD 1080p-FLAC Hi10P]'
@@ -41,7 +43,7 @@ describe('unit', function() {
         level.get('[AtoZ] To LOVE-Ru Darkness Vol.6 [BD 1080p-FLAC Hi10P]', function(err, value) {
           assert.equal(err, null)
           assert.equal(value.link, 'http://www.nyaa.eu/?page=download&tid=441373')
-          assert.equal(value.date, 'Sun Jun 09 2013 03:45:16 GMT-0400 (Eastern Daylight Time)')
+          assert.equal(value.date, 1370763916000)
           done()
         })
       })
@@ -81,13 +83,6 @@ describe('unit', function() {
       assert.deepEqual(res, [{link: data.value.link, title: data.key}])
     })
   })
-
-  // it('should find article if in db', function(done) {
-  //   db.findArticles(['AtoZ'], function(err, results) {
-  //     assert.equal(err, null)
-  //     done()
-  //   })
-  // })
 })
 
 
