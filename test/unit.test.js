@@ -4,22 +4,12 @@ var level = require('level-cache')()
   , http = require('http')
   , fs = require('fs')
   , compare = require('../lib/compare').compare
-
-
-var io = {
-  sockets: {
-    emit: function(event, data) {
-      io.emitted = data
-    }
-  },
-  emitted: null
-}
-
+  , articleEmitter = require('../lib/emitters').articleEmitter
 
 describe('unit', function() {
   before(function(done) {
     db = require('../lib/db')(level)
-    parse = require('../lib/parse')(db, io)
+    parse = require('../lib/parse')(db)
 
     var server = http.createServer(function(req, res) {
       fs.readFile('./test/mockrss.xml', function(err, file) {
@@ -36,10 +26,13 @@ describe('unit', function() {
   describe('parse', function() {
     it('should parse and save into the database and emit new', function(done) {
       parse.save('http://localhost:3001', function() {
-        assert.deepEqual(io.emitted, {
-          link: 'http://www.nyaa.eu/?page=download&tid=441373'
-        , title: '[AtoZ] To LOVE-Ru Darkness Vol.6 [BD 1080p-FLAC Hi10P]'
+        articleEmitter.on('new', function(article) {
+          assert.deepEqual(article, {
+            link: 'http://www.nyaa.eu/?page=download&tid=441373'
+          , title: '[AtoZ] To LOVE-Ru Darkness Vol.6 [BD 1080p-FLAC Hi10P]'
+          })
         })
+        
         level.get('[AtoZ] To LOVE-Ru Darkness Vol.6 [BD 1080p-FLAC Hi10P]', function(err, value) {
           assert.equal(err, null)
           assert.equal(value.link, 'http://www.nyaa.eu/?page=download&tid=441373')
